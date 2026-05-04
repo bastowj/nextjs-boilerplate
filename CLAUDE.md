@@ -1,0 +1,39 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Commands
+
+```bash
+npm run dev      # Start dev server with Turbopack
+npm run build    # Production build
+npm run lint     # ESLint + Prettier check
+npm run format   # Auto-format with Prettier
+npm test         # Run Jest tests
+```
+
+Tests live in `src/lib/__tests__/`. A pre-commit hook runs `lint` and `test` before every commit.
+
+## Architecture
+
+This is a **Next.js App Router** boilerplate with MDX content, Tailwind v4 styling, and dark/light theming.
+
+**Content system**: Blog posts and static pages live as MDX files in `/content/`. They are parsed at build time using `gray-matter` (frontmatter) and `next-mdx-remote`. Utility functions in `src/lib/` handle reading and parsing these files — `blog.ts` for posts, `pages.ts` for static pages, `mdx.ts` for MDX rendering.
+
+**Routing**: All routes are under `src/app/` using the App Router. Blog posts are at `/texts/[slug]`. Static content pages (about, privacy, impressum) each have their own route that delegates to `StaticPage` component fed from `/content/pages/`.
+
+**Styling**: Tailwind CSS v4 via PostCSS — no `tailwind.config.*` file, uses v4 defaults. Global styles in `src/app/globals.css`.
+
+**Styling convention**: All component styles are defined as named classes in the `@layer components` block in `globals.css`. Do not use inline Tailwind utility classes directly in JSX for anything beyond trivial one-offs — extract them into a named class in `globals.css` instead. Use `color:var(--token)` syntax when referencing CSS custom properties (e.g. `text-[color:var(--foreground-btn)]`).
+
+Tailwind variant classes (`group`, `group-hover`, `peer`, etc.) cannot be used inside `@apply` in Tailwind v4 — they will cause a build error. Use native CSS selectors instead (e.g. `.card:hover .card-img { @apply opacity-60; }`).
+
+**Do not use canonical Tailwind token shorthand classes** (e.g. `text-link`, `decoration-link`, `text-foreground-muted`) even though the IDE may suggest them. The project uses `@theme inline` which resolves token values statically at build time — using canonical names bakes in the light-mode value and breaks dark mode. Always reference CSS custom properties directly via `var(--token)` (e.g. `text-[color:var(--primary)]`) so the browser resolves them at runtime and the `.dark` class override takes effect.
+
+**Theming**: Dark/light mode via `next-themes`, wrapped in `src/components/providers/theme-provider.tsx` at the root layout.
+
+**Site config**: `src/constants/config.ts` holds `baseUrl`, author metadata, and site-wide constants. Add any new site-wide URLs or identifiers here rather than inlining them in page files.
+
+**Path alias**: `@/*` maps to `src/*`.
+
+**Icons**: Always use `@heroicons/react/24/outline` for icons. Export new icons via `src/lib/icons.ts`. Do not create custom SVG icon components.
