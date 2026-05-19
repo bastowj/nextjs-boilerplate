@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 const csp = [
   "default-src 'self'",
   "img-src 'self' data: blob:",
-  "script-src 'self' 'unsafe-inline'",
+  // 'unsafe-eval' is required: next-mdx-remote's <MDXRemote> compiles the MDX
+  // bundle on the client via `new Function(...)`. Without it, blog post bodies
+  // render as an empty <div>. See src/components/ClientMDXContent.tsx.
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "connect-src 'self'",
