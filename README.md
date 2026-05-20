@@ -22,11 +22,11 @@ docker run -p 3000:3000 nextjs-boilerplate
 ## Stack
 
 - **Next.js** (App Router)
-- **MDX** via `next-mdx-remote` + `gray-matter` for blog posts and static pages
+- **content-collections** for build-time MDX compilation with Zod-validated frontmatter
 - **Tailwind CSS v4** via PostCSS
 - **next-themes** for dark/light mode
 - **Jest** for testing
 
 ## Content
 
-Blog posts and static pages live as MDX files in `/content/`. Blog posts are served at `/texts/[slug]`.
+Blog posts and static pages live as MDX files in `/content/` (`texts/` and `pages/`). Schemas are defined in `content-collections.ts`; MDX is compiled at build time and rendered as React Server Components. Blog posts are served at `/texts/[slug]`.
