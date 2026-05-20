@@ -5,11 +5,11 @@ A Next.js (App Router) starter with MDX content, Tailwind CSS v4, and dark/light
 ## Commands
 
 ```bash
-npm run dev      # Start dev server with Turbopack
-npm run build    # Production build
-npm run lint     # ESLint + Prettier check
-npm run format   # Auto-format with Prettier
-npm test         # Run Jest tests
+pnpm dev         # Start dev server with Turbopack
+pnpm build       # Production build
+pnpm lint        # ESLint + Prettier check
+pnpm format      # Auto-format with Prettier
+pnpm test        # Run Jest tests
 ```
 
 ## Docker
