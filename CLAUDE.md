@@ -1,39 +1,48 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Commands
+Next.js App Router boilerplate with MDX content, Tailwind v4 and dark/light theming.
 
 ```bash
-pnpm dev         # Start dev server with Turbopack
-pnpm build       # Production build
-pnpm lint        # ESLint + Prettier check
-pnpm format      # Auto-format with Prettier
-pnpm test        # Run Jest tests
+pnpm dev        # Dev server (Turbopack)
+pnpm build      # Production build
+pnpm lint       # eslint . --max-warnings 0 && prettier --check .
+pnpm typecheck  # content-collections build && tsc --noEmit
+pnpm format     # Prettier write
+pnpm test       # Jest
 ```
 
-Tests live in `src/lib/__tests__/`. A pre-commit hook runs `lint` and `test` before every commit.
+Warnings fail `lint`; to accept one, scope the rule off in `eslint.config.mjs`. `typecheck` needs the `content-collections build` prefix because `.content-collections/generated` is gitignored, and it is a separate gate because `next build` does not typecheck test files.
 
-## Architecture
+## Structure
 
-This is a **Next.js App Router** boilerplate with MDX content, Tailwind v4 styling, and dark/light theming.
+- MDX content in `/content/`, compiled by `content-collections.ts` into `allTexts` / `allPages`. `src/lib/blog.ts` and `pages.ts` wrap those; `MDXContent.tsx` renders a body.
+- `BlogPost` and `StaticPage` are flat: `post.title`, not `post.frontmatter.title`.
+- Posts at `/texts/[slug]`, categories at `/texts/category/[category]`. Static pages delegate to `StaticPage`.
+- `src/constants/config.ts` holds site-wide URLs and identifiers — put new ones there. `navigation.ts` holds `navItems` and `legalNavItems`; `sitemap.ts` derives static routes from both, so don't hardcode a list.
+- Icons: `@heroicons/react/24/outline` via `src/lib/icons.ts`. No custom SVG components.
+- `@/*` → `src/*`.
 
-**Content system**: Blog posts and static pages live as MDX files in `/content/`. They are parsed at build time using `gray-matter` (frontmatter) and `next-mdx-remote`. Utility functions in `src/lib/` handle reading and parsing these files — `blog.ts` for posts, `pages.ts` for static pages, `mdx.ts` for MDX rendering.
+## Rules
 
-**Routing**: All routes are under `src/app/` using the App Router. Blog posts are at `/texts/[slug]`. Static content pages (about, privacy, impressum) each have their own route that delegates to `StaticPage` component fed from `/content/pages/`.
+- New dynamic route over build-time content: set `generateStaticParams` and `dynamicParams = false`, else it renders on demand.
+- Category URLs use `categorySlug()` / `getCategoryBySlug()`. Never percent-encode a category param — `generateMetadata` and the page component get different encoding levels of the same param.
+- Post slugs are MDX filenames, used verbatim and validated. Unsafe filenames and colliding category slugs fail the build by design; rename the content.
+- MDX renderers must merge an incoming `className` with the base class rather than spreading props over it, or fenced blocks lose `mdx-code`.
+- Component styles go in the `@layer components` block in `globals.css` as named classes, not inline utilities in JSX.
+- Tailwind variants (`group`, `peer`) in `@apply` are a v4 build error. Use `.card:hover .card-img { @apply opacity-60; }`.
+- Theme tokens declared in `@theme inline` (`background`, `surface`, `foreground`, `foreground-muted`, `foreground-btn`, `link`, `link-hover`, `primary-subtle`, `primary-strong`) take the shorthand: `bg-background`. Others (`--primary`, `--primary-hover`, `--border`, `--hover-bg`) need `text-[color:var(--primary)]`.
+- `defaultTheme` is `system`, so branch on `resolvedTheme` — `theme` is `"system"` until the user picks.
 
-**Styling**: Tailwind CSS v4 via PostCSS — no `tailwind.config.*` file, uses v4 defaults. Global styles in `src/app/globals.css`.
+## Tests
 
-**Styling convention**: All component styles are defined as named classes in the `@layer components` block in `globals.css`. Do not use inline Tailwind utility classes directly in JSX for anything beyond trivial one-offs — extract them into a named class in `globals.css` instead. Use `color:var(--token)` syntax when referencing CSS custom properties (e.g. `text-[color:var(--foreground-btn)]`).
+Live in `__tests__/` next to what they cover. `jest.config.ts` splits by extension: `.test.ts` → Node, `.test.tsx` → jsdom.
 
-Tailwind variant classes (`group`, `group-hover`, `peer`, etc.) cannot be used inside `@apply` in Tailwind v4 — they will cause a build error. Use native CSS selectors instead (e.g. `.card:hover .card-img { @apply opacity-60; }`).
+`content-collections` doesn't resolve outside a build. Mock it virtually; for a module importing it use a factory mock, since an automock still loads the real one.
 
-**Do not use canonical Tailwind token shorthand classes** (e.g. `text-link`, `decoration-link`, `text-foreground-muted`) even though the IDE may suggest them. The project uses `@theme inline` which resolves token values statically at build time — using canonical names bakes in the light-mode value and breaks dark mode. Always reference CSS custom properties directly via `var(--token)` (e.g. `text-[color:var(--primary)]`) so the browser resolves them at runtime and the `.dark` class override takes effect.
+```ts
+jest.mock("content-collections", () => ({ allTexts: [], allPages: [] }), {
+  virtual: true,
+});
+```
 
-**Theming**: Dark/light mode via `next-themes`, wrapped in `src/components/providers/theme-provider.tsx` at the root layout.
-
-**Site config**: `src/constants/config.ts` holds `baseUrl`, author metadata, and site-wide constants. Add any new site-wide URLs or identifiers here rather than inlining them in page files.
-
-**Path alias**: `@/*` maps to `src/*`.
-
-**Icons**: Always use `@heroicons/react/24/outline` for icons. Export new icons via `src/lib/icons.ts`. Do not create custom SVG icon components.
+For routing or data-fetching changes, run `pnpm build && pnpm start` and request the routes — a passing build isn't enough. Check the build's route markers: `ƒ` on a content route means it lost static generation.
