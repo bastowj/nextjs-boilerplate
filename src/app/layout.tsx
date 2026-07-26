@@ -46,7 +46,9 @@ export default function RootLayout({
           </a>
           <div className="layout-shell">
             <Navbar />
-            <main id="main-content" className="grow">{children}</main>
+            <main id="main-content" className="grow">
+              {children}
+            </main>
             <Footer />
           </div>
         </ThemeProvider>

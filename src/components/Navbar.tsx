@@ -5,13 +5,13 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { navItems, NavItem } from "@/constants/navigation";
+import { navItems, type NavItem } from "@/constants/navigation";
 import { SITE_CONFIG } from "@/constants/config";
 import { SunIcon, MoonIcon, Bars3Icon, XMarkIcon } from "@/lib/icons";
 
 export function Navbar() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -19,11 +19,15 @@ export function Navbar() {
   useEffect(() => setMounted(true), []);
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   // Render SunIcon during SSR/hydration to avoid mismatch, then swap after mount
-  const ThemeIcon = !mounted ? SunIcon : theme === "dark" ? MoonIcon : SunIcon;
+  const ThemeIcon = !mounted
+    ? SunIcon
+    : resolvedTheme === "dark"
+      ? MoonIcon
+      : SunIcon;
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -63,17 +67,29 @@ export function Navbar() {
             {item.name}
           </Link>
         ))}
-        <button onClick={toggleTheme} className="nav-button" aria-label="Toggle theme">
+        <button
+          onClick={toggleTheme}
+          className="nav-button"
+          aria-label="Toggle theme"
+        >
           <ThemeIcon className="nav-theme-icon" />
         </button>
       </div>
 
       {/* Mobile Menu Button */}
       <div className="nav-mobile-buttons">
-        <button onClick={toggleTheme} className="nav-button mr-2" aria-label="Toggle theme">
+        <button
+          onClick={toggleTheme}
+          className="nav-button mr-2"
+          aria-label="Toggle theme"
+        >
           <ThemeIcon className="nav-theme-icon" />
         </button>
-        <button onClick={toggleMenu} className="nav-button" aria-label="Toggle menu">
+        <button
+          onClick={toggleMenu}
+          className="nav-button"
+          aria-label="Toggle menu"
+        >
           {isMenuOpen ? (
             <XMarkIcon className="nav-theme-icon" />
           ) : (

@@ -2,20 +2,20 @@ import { GET } from "../route";
 import * as blog from "@/lib/blog";
 import type { BlogPost } from "@/lib/blog";
 
-jest.mock("@/lib/blog");
+jest.mock("@/lib/blog", () => ({
+  getAllBlogPosts: jest.fn(),
+}));
 
-function makePost(overrides: Partial<BlogPost["frontmatter"]> = {}): BlogPost {
+function makePost(overrides: Partial<BlogPost> = {}): BlogPost {
   return {
     slug: "test-post",
-    content: "",
-    frontmatter: {
-      title: "Test Post",
-      date: "2024-06-01",
-      excerpt: "A test excerpt.",
-      categories: ["Tech"],
-      author: "Test Author",
-      ...overrides,
-    },
+    body: "",
+    title: "Test Post",
+    date: "2024-06-01",
+    excerpt: "A test excerpt.",
+    categories: ["Tech"],
+    author: "Test Author",
+    ...overrides,
   };
 }
 
@@ -74,10 +74,12 @@ describe("GET /feed.xml", () => {
   });
 
   it("renders one item per post", async () => {
-    jest.spyOn(blog, "getAllBlogPosts").mockReturnValue([
-      makePost({ title: "Post A" }),
-      makePost({ title: "Post B" }),
-    ]);
+    jest
+      .spyOn(blog, "getAllBlogPosts")
+      .mockReturnValue([
+        makePost({ title: "Post A" }),
+        makePost({ title: "Post B" }),
+      ]);
     const xml = await (await GET()).text();
     expect(xml).toContain("<![CDATA[Post A]]>");
     expect(xml).toContain("<![CDATA[Post B]]>");

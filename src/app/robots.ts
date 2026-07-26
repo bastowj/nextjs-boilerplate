@@ -7,15 +7,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        disallow: "/api/", // Next.js API routes
-      },
-      {
-        userAgent: "*",
-        disallow: "/_next/", // Next.js build output
-      },
-      {
-        userAgent: "*",
-        disallow: "/public/", // Public folder
+        // Do not add /_next/ — it holds the CSS and JS crawlers need to render
+        // pages, and /_next/image serves every optimised image.
+        disallow: "/api/",
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
