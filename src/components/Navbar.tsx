@@ -43,7 +43,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <nav className="nav">
+    <nav className="nav" aria-label="Primary navigation">
       <div className="nav-brand">
         <Link href="/" className="nav-brand-link">
           <Image
@@ -94,7 +94,11 @@ export function Navbar() {
         <button
           onClick={toggleMenu}
           className="nav-button"
-          aria-label="Toggle menu"
+          aria-label={
+            isMenuOpen ? "Close navigation menu" : "Open navigation menu"
+          }
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation-menu"
         >
           {isMenuOpen ? (
             <XMarkIcon className="nav-theme-icon" />
@@ -106,7 +110,7 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="nav-mobile-menu">
+        <div id="mobile-navigation-menu" className="nav-mobile-menu">
           <div className="nav-mobile-menu-inner">
             {navItems.map((item) => {
               const isActive = isRouteActive(pathname, item.href);

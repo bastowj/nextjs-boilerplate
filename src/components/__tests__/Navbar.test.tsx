@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Navbar } from "../Navbar";
 
 const mockUsePathname = jest.fn();
@@ -59,5 +59,30 @@ describe("Navbar", () => {
       expect(link).toHaveClass("font-normal");
       expect(link).not.toHaveAttribute("aria-current");
     }
+  });
+
+  it("labels the primary navigation and exposes mobile menu state", () => {
+    render(<Navbar />);
+
+    expect(
+      screen.getByRole("navigation", { name: "Primary navigation" }),
+    ).toBeInTheDocument();
+
+    const openButton = screen.getByRole("button", {
+      name: "Open navigation menu",
+    });
+    expect(openButton).toHaveAttribute("aria-expanded", "false");
+    expect(openButton).toHaveAttribute(
+      "aria-controls",
+      "mobile-navigation-menu",
+    );
+
+    fireEvent.click(openButton);
+    expect(
+      screen.getByRole("button", { name: "Close navigation menu" }),
+    ).toHaveAttribute("aria-expanded", "true");
+    expect(
+      document.getElementById("mobile-navigation-menu"),
+    ).toBeInTheDocument();
   });
 });
