@@ -5,10 +5,21 @@ Transitive pins are raised via `pnpm.overrides` in `package.json`.
 
 ## Open
 
-**CVE-2026-14257** / GHSA-mh99-v99m-4gvg — brace-expansion, high, OOM DoS.
-Present as 1.1.16 (`eslint>minimatch`) and 2.1.2 (`jest>@jest/core>@jest/reporters>glob>minimatch`).
+None. `pnpm audit` is clean.
 
-Accepted. Fixed only in 5.0.8; the 1.x and 2.x lines have no backport and are already at their latest. v5 exports `{ expand }` rather than a callable, so an override breaks `minimatch`, which calls it as a function. Both paths are dev-only — no runtime exposure. Revisit when `minimatch` moves to a v5-compatible release.
+## 2026-08-23 — Vercel build compatibility and dependency refresh
+
+Updated `next` and `eslint-config-next` from 16.2.12 to 16.3.2. The Vercel
+adapter cannot be combined with Next's `output: "standalone"` copy step: it
+consumes trace files during packaging, after which Next's standalone step can
+fail reading the server trace. `next.config.ts` now disables standalone output
+only when `NEXT_ADAPTER_PATH` or `VERCEL` is set; Docker and local production
+builds retain it.
+
+Scoped overrides update brace-expansion 1.x and 2.x, js-yaml 3.x and 4.x, and
+nanoid 3.x without forcing incompatible majors into their dependants. This
+resolves the former brace-expansion finding while preserving ESLint's bundled
+minimatch dependency.
 
 ## Resolved
 
