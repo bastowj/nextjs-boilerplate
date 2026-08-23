@@ -19,9 +19,15 @@ export function Navbar() {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
+  const nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+
   const toggleTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    setTheme(nextTheme);
   };
+
+  const themeButtonLabel = mounted
+    ? `Switch to ${nextTheme} theme`
+    : "Change theme";
 
   // Render SunIcon during SSR/hydration to avoid mismatch, then swap after mount
   const ThemeIcon = !mounted
@@ -76,7 +82,7 @@ export function Navbar() {
         <button
           onClick={toggleTheme}
           className="nav-button"
-          aria-label="Toggle theme"
+          aria-label={themeButtonLabel}
         >
           <ThemeIcon className="nav-theme-icon" />
         </button>
@@ -87,7 +93,7 @@ export function Navbar() {
         <button
           onClick={toggleTheme}
           className="nav-button mr-2"
-          aria-label="Toggle theme"
+          aria-label={themeButtonLabel}
         >
           <ThemeIcon className="nav-theme-icon" />
         </button>

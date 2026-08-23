@@ -3,13 +3,14 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { Navbar } from "../Navbar";
 
 const mockUsePathname = jest.fn();
+const mockSetTheme = jest.fn();
 
 jest.mock("next/navigation", () => ({
   usePathname: () => mockUsePathname(),
 }));
 
 jest.mock("next-themes", () => ({
-  useTheme: () => ({ resolvedTheme: "light", setTheme: jest.fn() }),
+  useTheme: () => ({ resolvedTheme: "light", setTheme: mockSetTheme }),
 }));
 
 jest.mock("next/link", () => ({
@@ -43,6 +44,7 @@ jest.mock("@/lib/icons", () => ({
 describe("Navbar", () => {
   beforeEach(() => {
     mockUsePathname.mockReturnValue("/texts/example-post");
+    mockSetTheme.mockClear();
   });
 
   it("marks the parent route current on nested pages", () => {
@@ -84,5 +86,17 @@ describe("Navbar", () => {
     expect(
       document.getElementById("mobile-navigation-menu"),
     ).toBeInTheDocument();
+  });
+
+  it("announces the next theme and activates it", () => {
+    render(<Navbar />);
+
+    const themeButtons = screen.getAllByRole("button", {
+      name: "Switch to dark theme",
+    });
+    expect(themeButtons).toHaveLength(2);
+
+    fireEvent.click(themeButtons[0]);
+    expect(mockSetTheme).toHaveBeenCalledWith("dark");
   });
 });
